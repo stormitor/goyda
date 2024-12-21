@@ -24,6 +24,37 @@ pygame.display.set_caption("Shmup!")
 clock = pygame.time.Clock()
 
 
+class Player2(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.transform.scale(player_img, (50, 38))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.radius = 20
+        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
+        self.rect.centerx = WIDTH / 2
+        self.rect.bottom = HEIGHT - 10
+        self.speedx = 0
+
+    def update(self):
+        self.speedx = 0
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_RIGHT]:
+            self.speedx = -8
+        if keystate[pygame.K_LEFT]:
+            self.speedx = 8
+        self.rect.x += self.speedx
+        if keystate[pygame.K_w]:
+            pass
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.left < 0:
+            self.rect.left = 0
+
+    def shoot(self):
+        bullet = Bullet(self.rect.centerx, self.rect.top)
+        all_sprites.add(bullet)
+        bullets.add(bullet)
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -39,11 +70,13 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         self.speedx = 0
         keystate = pygame.key.get_pressed()
-        if keystate[pygame.K_LEFT]:
+        if keystate[pygame.K_a]:
             self.speedx = -8
-        if keystate[pygame.K_RIGHT]:
+        if keystate[pygame.K_d]:
             self.speedx = 8
         self.rect.x += self.speedx
+        if keystate[pygame.K_w]:
+            pass
         if self.rect.right > WIDTH:
             self.rect.right = WIDTH
         if self.rect.left < 0:
@@ -100,12 +133,15 @@ background_rect = background.get_rect()
 player_img = pygame.image.load("images/playerShip1_orange.png").convert()
 meteor_img = pygame.transform.scale(pygame.image.load("images/meteorBrown_med2.png").convert(), (50, 50))
 bullet_img = pygame.transform.scale(pygame.image.load("images/laserRed16.png").convert(), (50, 50))
+player2_img = pygame.image.load("images/playerShip1_orange.png").convert()
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
+player2 = Player2()
 player = Player()
 all_sprites.add(player)
+all_sprites.add(player2)
 for i in range(8):
     m = Mob()
     all_sprites.add(m)
@@ -124,6 +160,8 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.shoot()
+            elif event.key == pygame.K_f:
+                player2.shoot()
 
     # Обновление
     all_sprites.update()
@@ -136,6 +174,9 @@ while running:
 
     # Проверка, не ударил ли моб игрока
     hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
+    if hits:
+        running = False
+    hits = pygame.sprite.spritecollide(player2, mobs, False, pygame.sprite.collide_circle)
     if hits:
         running = False
 
